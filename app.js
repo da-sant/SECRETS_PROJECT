@@ -5,11 +5,14 @@ const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
 const encrypt = require('mongoose-encryption');
-const md5 = require('md5');
+// const md5 = require('md5');
+const bcrypt = require('bcrypt');
+const saltRoutes = 10;
 
 const app = express();
 
-console.log(md5('123456'));
+// console.log(md5('123456'));
+
 
 // console.log(process.env.API_KEY);
 
@@ -56,43 +59,68 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-  const username = req.body.username;
-  const password = md5(req.body.password);
 
-  const newUser = new User({
-    email: username,
-    password: password,
+  // const username = req.body.username;
+
+  bcrypt.hash(req.body.password, saltRoutes, (err, hash) => {
+    const newUser = new User({
+      email: req.body.username,
+      password: hash,
+    });
+  
+    if (!req.body.username) {
+      console.log('Not user');
+    } else {
+      newUser
+        .save()
+        .then(() => {
+          console.log(`Successfully saved new user in Database`);
+          res.render('secrets');
+        })
+        .catch((err) => {
+          console.log(`Error: ${err}, we couldn't save new user.`);
+        });
+    }
   });
 
-  if (!username) {
-    console.log('Not user');
-  } else {
-    newUser
-      .save()
-      .then(() => {
-        console.log(`Successfully saved new user in Database`);
-        res.render('secrets');
-      })
-      .catch((err) => {
-        console.log(`Error: ${err}, we couldn't save new user.`);
-      });
-  }
+  // const username = req.body.username;
+  // const password = md5(req.body.password);
+
+  // const newUser = new User({
+  //   email: username,
+  //   password: password,
+  // });
+
+  // if (!username) {
+  //   console.log('Not user');
+  // } else {
+  //   newUser
+  //     .save()
+  //     .then(() => {
+  //       console.log(`Successfully saved new user in Database`);
+  //       res.render('secrets');
+  //     })
+  //     .catch((err) => {
+  //       console.log(`Error: ${err}, we couldn't save new user.`);
+  //     });
+  // }
 });
 
 app.post('/login', (req, res) => {
   const username = req.body.username;
-  const password = md5(req.body.password);
+  const password = req.body.password;
+    // const password = md5(req.body.password);
 
   User.findOne({ email: username })
     .then((foundUser) => {
       if (foundUser) {
-        if (foundUser.password === password) {
+        bcrypt.compare(password, foundUser.password, function(err, result) {
+         if (result === true) {
           res.render('secrets');
-        } else {
-          res.send('Wrong password');
-        }
-      } else {
-        res.send('User not found');
+         } else {
+          console.log(`${err}`);
+         } 
+      });
       }
     })
     .catch((err) => {
