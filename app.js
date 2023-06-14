@@ -70,7 +70,7 @@ app.post('/register', (req, res) => {
     });
   
     if (!userMail) {
-      console.log('Not user');
+      console.log(`User doesn't exists. Error: ${err}`);
     } else {
       newUser
         .save()
@@ -108,16 +108,17 @@ app.post('/register', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  const username = req.body.username;
-  const password = req.body.password;
+  const userMail = req.body.username;
+  const userPassword = req.body.password;
     // const password = md5(req.body.password);
 
-  User.findOne({ email: username })
+  User.findOne({ email: userMail })
     .then((foundUser) => {
       if (foundUser) {
-        bcrypt.compare(password, foundUser.password, function(err, result) {
+        bcrypt.compare(userPassword, foundUser.password, (err, result) => {
          if (result === true) {
           res.render('secrets');
+          console.log(`User Successfully found: ${foundUser}`);
          } else {
           console.log(`${err}`);
          } 
