@@ -5,16 +5,8 @@ const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
 const encrypt = require('mongoose-encryption');
-// const md5 = require('md5');
-const bcrypt = require('bcrypt');
-const saltRoutes = 10;
 
 const app = express();
-
-// console.log(md5('123456'));
-
-
-// console.log(process.env.API_KEY);
 
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
@@ -84,50 +76,29 @@ app.post('/register', (req, res) => {
     }
   });
 
-  // const username = req.body.username;
-  // const password = md5(req.body.password);
-
-  // const newUser = new User({
-  //   email: username,
-  //   password: password,
-  // });
-
-  // if (!username) {
-  //   console.log('Not user');
-  // } else {
-  //   newUser
-  //     .save()
-  //     .then(() => {
-  //       console.log(`Successfully saved new user in Database`);
-  //       res.render('secrets');
-  //     })
-  //     .catch((err) => {
-  //       console.log(`Error: ${err}, we couldn't save new user.`);
-  //     });
-  // }
 });
 
 app.post('/login', (req, res) => {
-  const userMail = req.body.username;
-  const userPassword = req.body.password;
-    // const password = md5(req.body.password);
+  // const userMail = req.body.username;
+  // const userPassword = req.body.password;
+  //   // const password = md5(req.body.password);
 
-  User.findOne({ email: userMail })
-    .then((foundUser) => {
-      if (foundUser) {
-        bcrypt.compare(userPassword, foundUser.password, (err, result) => {
-         if (result === true) {
-          res.render('secrets');
-          console.log(`User Successfully found: ${foundUser}`);
-         } else {
-          console.log(`${err}`);
-         } 
-      });
-      }
-    })
-    .catch((err) => {
-      console.log(`There was an error: ${err}`);
-    });
+  // User.findOne({ email: userMail })
+  //   .then((foundUser) => {
+  //     if (foundUser) {
+  //       bcrypt.compare(userPassword, foundUser.password, (err, result) => {
+  //        if (result === true) {
+  //         res.render('secrets');
+  //         console.log(`User Successfully found: ${foundUser}`);
+  //        } else {
+  //         console.log(`${err}`);
+  //        } 
+  //     });
+  //     }
+  //   })
+  //   .catch((err) => {
+  //     console.log(`There was an error: ${err}`);
+  //   });
 });
 
 //Start the server on port 3000 and log a message to the console
