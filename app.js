@@ -60,15 +60,16 @@ app.get('/register', (req, res) => {
 
 app.post('/register', (req, res) => {
 
-  // const username = req.body.username;
+  const userMail = req.body.username;
+  const userPassword = req.body.password;
 
-  bcrypt.hash(req.body.password, saltRoutes, (err, hash) => {
+  bcrypt.hash(userPassword, saltRoutes, (err, hash) => {
     const newUser = new User({
-      email: req.body.username,
+      email: userMail,
       password: hash,
     });
   
-    if (!req.body.username) {
+    if (!userMail) {
       console.log('Not user');
     } else {
       newUser
