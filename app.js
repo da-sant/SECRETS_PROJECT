@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
   googleId: String,
+  secrets: [String],
 });
 
 userSchema.plugin(passportLocalMongoose);
@@ -46,6 +47,8 @@ userSchema.plugin(findOrCreate);
 const User = mongoose.model('User', userSchema);
 
 passport.use(User.createStrategy());
+
+//PASSPORT
 
 passport.serializeUser((user, done) => {
   process.nextTick(() => {
@@ -59,6 +62,7 @@ passport.deserializeUser((user, done) => {
   });
 });
 
+// GOOGLE STRATEGY
 passport.use(
   new GoogleStrategy(
     {
@@ -77,6 +81,8 @@ passport.use(
   )
 );
 
+//FACEBOOK STRATEGY
+
 passport.use(
   new FacebookStrategy(
     {
@@ -92,7 +98,7 @@ passport.use(
   )
 );
 
-// ----
+// ---- GET ROUTES
 
 app.get('/', (req, res) => {
   res.render('home');
@@ -108,7 +114,6 @@ app.get(
   passport.authenticate('google', { failureRedirect: '/login' }),
   function (req, res) {
     console.log('Successfully authenticated with Google');
-    // Successful authentication, redirect to cretes.
     res.redirect('/secrets');
   }
 );
@@ -120,7 +125,6 @@ app.get(
   passport.authenticate('facebook', { failureRedirect: '/login' }),
   function (req, res) {
     console.log('Successfully authenticated with Facebook');
-    // Successful authentication, redirect home.
     res.redirect('/secrets');
   }
 );
@@ -134,8 +138,19 @@ app.get('/register', (req, res) => {
 });
 
 app.get('/secrets', (req, res) => {
+
+  User.find({ secrets: { $ne: null } })
+    .then((foundUsers) => {
+      res.render('secrets', { usersWithSecrets: foundUsers });
+    })
+    .catch((err) => {
+      console.log(`${err}`);
+    });
+});
+
+app.get('/submit', (req, res) => {
   if (req.isAuthenticated()) {
-    res.render('secrets');
+    res.render('submit');
   } else {
     console.log(`Please login`);
     res.redirect('/login');
@@ -152,14 +167,42 @@ app.get('/logout', (req, res, next) => {
   });
 });
 
+// POST
+
+app.post('/submit', (req, res) => {
+  const submittedSecret = req.body.secret;
+
+  console.log(req.user.id);
+
+  User.findById(req.user.id)
+    .then((foundUser) => {
+      if (foundUser) {
+        foundUser.secrets.push(submittedSecret);
+        foundUser
+          .save()
+          .then(() => {
+            res.redirect('/secrets');
+          })
+          .catch((err) => {
+            console.log(`${err}`);
+          });
+      } else {
+        res.send(`No secrets found ${err}`);
+      }
+    })
+    .catch((err) => {
+      console.log(`There was a problem: ${err}`);
+    });
+});
+
 app.post('/register', async (req, res) => {
   try {
-    const registerUser = await User.register(
+    const registeredUser = await User.register(
       { username: req.body.username },
       req.body.password
     );
 
-    if (registerUser) {
+    if (registeredUser) {
       passport.authenticate('local')(req, res, () => {
         res.redirect('/secrets');
       });
