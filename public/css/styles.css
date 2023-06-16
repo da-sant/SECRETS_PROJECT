@@ -20,3 +20,9 @@ span.size-60 {
     font-variation-settings: 'OPSZ' 60, 'FILL' 1;
 
 }
+
+.gmail-icon {
+    width: 12%;
+    height: auto;
+    padding-right: 8px;
+}
